@@ -1,0 +1,12 @@
+.git
+.venv
+node_modules
+dist
+vault-data
+backups
+.env
+.env.*
+.cache
+__pycache__
+*.sqlite*
+tests

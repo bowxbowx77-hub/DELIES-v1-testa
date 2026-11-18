@@ -1,0 +1,31 @@
+services:
+  devvault:
+    build:
+      context: .
+      args: { INSTALL_CLAMAV: '1' }
+    environment:
+      DEVVAULT_SCAN: '1'
+    volumes:
+      - definitions:/var/lib/clamav:ro
+    depends_on:
+      signatures:
+        condition: service_healthy
+  signatures:
+    build:
+      context: .
+      args: { INSTALL_CLAMAV: '1' }
+    user: clamav
+    restart: unless-stopped
+    entrypoint: [freshclam]
+    command: [--daemon, --foreground, --stdout, --checks=12]
+    volumes:
+      - definitions:/var/lib/clamav
+    healthcheck:
+      test: ['CMD-SHELL', 'test -s /var/lib/clamav/daily.cvd || test -s /var/lib/clamav/daily.cld']
+      interval: 30s
+      timeout: 3s
+      retries: 20
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+volumes:
+  definitions:

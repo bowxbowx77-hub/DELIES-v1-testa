@@ -1,0 +1,7 @@
+node_modules
+.venv
+.cache
+vault-data
+dist
+backups
+package-lock.json

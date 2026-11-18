@@ -1,0 +1,22 @@
+services:
+  devvault:
+    environment:
+      DEVVAULT_HTTPS: '1'
+      DEVVAULT_TRUST_PROXY: '1'
+      DEVVAULT_ORIGIN: https://${DEVVAULT_DOMAIN}
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      DEVVAULT_DOMAIN: ${DEVVAULT_DOMAIN:?Set your public domain in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - tls_data:/data
+      - tls_config:/config
+    depends_on:
+      devvault:
+        condition: service_healthy
+volumes:
+  tls_data:
+  tls_config:

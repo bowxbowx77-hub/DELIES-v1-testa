@@ -1,0 +1,20 @@
+services:
+  devvault:
+    build: .
+    restart: unless-stopped
+    environment:
+      DEVVAULT_HTTPS: ${DEVVAULT_HTTPS:-0}
+      DEVVAULT_TRUST_PROXY: ${DEVVAULT_TRUST_PROXY:-0}
+      DEVVAULT_ORIGIN: ${DEVVAULT_ORIGIN:-}
+    ports:
+      - '127.0.0.1:3000:3000'
+    volumes:
+      - vault_data:/data
+      - vault_backups:/backups
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+volumes:
+  vault_data:
+  vault_backups:
