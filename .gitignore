@@ -33,3 +33,15 @@ test-results/
 playwright-report/
 
 .cache/
+
+# Mobile build products and signing material never belong in source control.
+mobile/android/
+mobile/build/
+mobile/out/
+.devault-signing/
+.devvault-signing/
+*.jks
+*.keystore
+*.p12
+*.pk8
+*.idsig

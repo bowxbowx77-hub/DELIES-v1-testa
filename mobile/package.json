@@ -1,0 +1,20 @@
+{
+  "name": "devvault-pocket",
+  "version": "1.1.0",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "7.6.10",
+    "@capacitor/browser": "7.0.5",
+    "@capacitor/core": "7.6.10",
+    "@capacitor/file-transfer": "1.0.10",
+    "@capacitor/filesystem": "7.1.9",
+    "@capacitor/share": "7.0.4",
+    "@zip.js/zip.js": "2.25.0",
+    "idb": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.6.10",
+    "@ruby2js/ruby2js": "5.1.2",
+    "esbuild": "0.25.12"
+  }
+}

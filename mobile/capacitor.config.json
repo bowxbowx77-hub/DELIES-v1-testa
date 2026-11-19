@@ -1,0 +1,1 @@
+{"appId":"org.devvault.pocket","appName":"DEVVAULT","webDir":"build/www","server":{"hostname":"pocket.devvault.invalid","androidScheme":"https","cleartext":false},"android":{"allowMixedContent":false,"webContentsDebuggingEnabled":false,"backgroundColor":"#101413","minWebViewVersion":110},"plugins":{"CapacitorHttp":{"enabled":false}}}

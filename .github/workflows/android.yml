@@ -1,0 +1,38 @@
+name: Android APK
+on:
+  push:
+    paths: ['mobile/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci --no-audit --no-fund
+      - name: Compile Ruby and C++ and package the native host
+        run: |
+          python3 -m pip install --target "$RUNNER_TEMP/wasm-tools" ziglang==0.13.0
+          export ZIG="$RUNNER_TEMP/wasm-tools/ziglang/zig"
+          ./scripts/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: devvault-unsigned-apk
+          path: mobile/out/*-unsigned.apk
+          if-no-files-found: error
+          retention-days: 7
