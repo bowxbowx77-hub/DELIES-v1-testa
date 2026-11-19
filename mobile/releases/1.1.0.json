@@ -1,11 +1,10 @@
 {
   "version": "1.1.0",
-  "build_run": 44482666584,
-  "source_commit": "fafab83ed815e1114ce542a8b6e10fac337b928b",
+  "build_run": 44485089363,
+  "source_commit": "d52a849d6afa63e6e2af8140a6abe0f5fba44e9f",
   "branch": "arena/e35c5c39-delies-v1-testa",
-  "unsigned_sha256": "0a32bb1836cf27b0340f7a0854beac528028ffe934ed68186129973ae066bdb1",
-  "content_digest": "cb63e15326715cc59c9ec8f955f542688c9580c510c10c16cdc72583ea0eebde",
+  "unsigned_sha256": "e53a309b3daa1bf153ca87748335ea78bc84ef6b36200d084a9102fa040b6faf",
+  "content_digest": "d29e54724b3e2f5147e395ea400f9b2ce924acd561ef3c96157ba2ee80865580",
   "certificate_sha256": "1fd9acf5d9a447692ef7ffc1da6c920c7823fa39da1e79a519350e1234ca130b",
-  "signature": "GA7OE8Kgwb6hRWwsM1RuYli9P8/0P1QHdhz/SuZHQbfmRsahCKksVGq6McFPD/Wo33CKkaCrIGQnUZ5wsK+0A6+56A6YESDZeKyFHumoyCqgfUh0XS870QDiP+Isrd9ZHKqa0rOxvl/wofbdszYaKU5XA/VO6y7Meg7XoEi3mKr3oavk3O/fOn61EZnDjLNDhBFePeSXDCwebJXYknDYkqsixVJ/MsMFPOk6s15lGjbpi86GH1KmPpgDAVKAVSLw1KH9S393FYkBw3geN9Xs2ZeOM+hzdcFreVmmjVYC7cURvQSe5LjOymO8MUqjcmybYMbUsXcJ/tB+RH4MSAeohAz+FfB13QqJCViQxz7ivfJfZSvYdEpa+0cYtpgmJ8NfdGTUI9i5mqR0UdbagAJo+zDw+XkmCDw/LF0iJS7Bv2yypjUs69EgMRSNWZsv3wDbitMqio5TTpugu+u98noU6j3ErU3VjObkkg4iu1F4WWeJZqbOe1l1wtsH2lWkLxEi",
-  "verification_revision": 2
+  "signature": "G93pPUvHQW4Y5qT0xvLptyJ9QgCwEaFyAKJ6GAjDKJkOnKU68xILOYz2JOPc1PeZpQKpLEHNFgrsCA04hs3+CKwOosAuNnta+6p+HbkDiT8SxKr1Mv64W0l4mY5moyQM4e54LtAfqvzQ6cuNQzNeNjZn4DNiO0hVlGRmkutnS1eGwXyMCRGApsugKqFSmgTOi7e0lrn2GdkNlQur6c9icyQc5V98kN6vDuZHFEflOkIsD+wasQrRvtBRJzR3YYYC4N4ShnrulkcTSoKgbMXdax6K8KsI4M3oaMfFYfrR3qI6f+qYPQi+jc2AJOS2GVmTXz6LUYZfzM0273YAV8tqSyeeI2KW+KijM/l+gzSuVoUSxXgwdisHMxqlp/+rKgRg0CCO0c5JRkddYFoOMom3+cqo43aCuVoDjomh7Rm+rz+VtxZXNZtEOoaSB3hPmxpuVOmaPU7e8Q3RZRrrtsfNDh6+ILX/KYv/5hYe2rNM5VP4tUG69oo0MwgzIAHRA1bS"
 }
