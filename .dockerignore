@@ -10,3 +10,8 @@ backups
 __pycache__
 *.sqlite*
 tests
+
+mobile
+.devvault-signing
+*.key
+*.jks

@@ -116,7 +116,9 @@ def allrows(sql, args=()):
 
 def current_user(required=True):
     if "viewer" not in g:
-        key = hashlib.sha256(request.cookies.get("dv_session", "").encode()).hexdigest()
+        from .mobile import session_key
+
+        key = session_key()
         g.viewer = one(
             "SELECT u.* FROM users u JOIN sessions s ON u.id=s.user_id WHERE token=? AND expires>?",
             (key, now()),

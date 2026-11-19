@@ -1,7 +1,7 @@
 name: Android APK
 on:
   push:
-    paths: ['mobile/**', '.github/workflows/android.yml']
+    paths: ['mobile/**', '!mobile/releases/*.json', '.github/workflows/android.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,9 +30,19 @@ jobs:
           python3 -m pip install --target "$RUNNER_TEMP/wasm-tools" ziglang==0.13.0
           export ZIG="$RUNNER_TEMP/wasm-tools/ziglang/zig"
           ./scripts/package.sh
+      - name: Test packaged Pocket assets against isolated HTTPS and SQLite
+        working-directory: .
+        run: |
+          npm ci --no-audit --no-fund
+          python3 scripts/setup_backend.py
+          npx playwright install --with-deps chromium
+          npx playwright test -c mobile/tests/playwright.config.cjs
+      - name: Record unsigned APK and Android v2 digests
+        id: request
+        run: echo "digests=$(ruby scripts/apk_v2.rb inspect out/*-unsigned.apk)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
-          name: devvault-unsigned-apk
+          name: apk-${{ steps.request.outputs.digests }}
           path: mobile/out/*-unsigned.apk
           if-no-files-found: error
           retention-days: 7

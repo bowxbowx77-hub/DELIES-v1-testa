@@ -55,12 +55,14 @@ static u32 word(const u8* b) {return u32(b[0]) | (u32(b[1])<<8);}
 static u32 dword(const u8* b) {return word(b) | (word(b+2)<<16);}
 // Reject unbounded central directory allocation before asking the ZIP library to parse.
 int dv_zip_tail(u32 n,u32 archive_size) {
-    if(n>65557 || n<22 || archive_size>128*1024*1024u) return 4;
+    if(n>65557 || n<22 || n>archive_size || archive_size>128*1024*1024u) return 4;
     for(int pos=int(n)-22;pos>=0;--pos) {
         auto p=input+pos;
         if(dword(p)!=0x06054b50u || u32(pos)+22+word(p+20)!=n) continue;
         auto count=word(p+10),size=dword(p+12),off=dword(p+16);
-        return (word(p+4) || word(p+6) || word(p+8)!=count || count>2000 || size>2097152 || off>archive_size || size>archive_size-off) ? 4 : 0;
+        const u32 end=archive_size-n+u32(pos);
+        if(pos>=20 && dword(p-20)==0x07064b50u) return 4; // ZIP64 locator
+        return (word(p+4) || word(p+6) || word(p+8)!=count || count>2000 || size>2097152 || off>end || size!=end-off) ? 4 : 0;
     }
     return 4;
 }

@@ -5,3 +5,8 @@ vault-data
 dist
 backups
 package-lock.json
+mobile/build
+mobile/android
+mobile/out
+mobile/test-results
+.devvault-signing

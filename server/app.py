@@ -37,6 +37,8 @@ from .core import (
     workspace,
     write,
 )
+from .mobile import install as install_mobile
+from .mobile import pocket_channel
 from .starters import STARTERS
 from .storage import (
     MAX_PROJECT,
@@ -154,6 +156,8 @@ def create_app(config=None):
     init(app.config["DATA_DIR"])
     dummy_hash = generate_password_hash(os.urandom(16).hex(), method="scrypt:32768:8:1")
 
+    install_mobile(app, dummy_hash, body, text, password)
+
     @app.teardown_appcontext
     def close(_err):
         if "db" in g:
@@ -166,9 +170,9 @@ def create_app(config=None):
             "HEAD",
             "OPTIONS",
         ):
-            if (
-                request.headers.get("X-DevVault-Request") != "workspace"
-                or request.headers.get("Sec-Fetch-Site") == "cross-site"
+            if request.headers.get("X-DevVault-Request") != "workspace" or (
+                request.headers.get("Sec-Fetch-Site") == "cross-site"
+                and not pocket_channel()
             ):
                 abort(403, "A same-origin workspace request is required.")
             if request.endpoint != "upload":
@@ -176,6 +180,7 @@ def create_app(config=None):
             origin = request.headers.get("Origin")
             if (
                 origin
+                and not pocket_channel()
                 and urlsplit(origin).netloc != request.host
                 and origin != os.getenv("DEVVAULT_ORIGIN")
                 and request.headers.get("Sec-Fetch-Site") != "same-origin"
@@ -450,13 +455,44 @@ def create_app(config=None):
             changes, staged = stage_upload(
                 request.files.getlist("files"), request.form.get("paths"), stage
             )
-            msg = text(request.form, "message", 240) or f"Upload {len(changes)} file(s)"
+            msg = (
+                text(
+                    request.form if "message" in request.form else request.args,
+                    "message",
+                    240,
+                )
+                or f"Upload {len(changes)} file(s)"
+            )
+            visibility = request.form.get("snapshot_visibility")
+            if visibility is not None and (
+                visibility not in {"public", "private"}
+                or not request.headers.get("Authorization", "").startswith(
+                    "Bearer dvm_"
+                )
+                or not request.form.get("base")
+            ):
+                abort(
+                    400,
+                    "A whole-snapshot publication requires Pocket auth, visibility and a base version.",
+                )
             with write():
                 r = access(rid, True)
-                base_check(rid, request.form.get("base"))
-                files = manifest(latest(rid)["id"])
+                base_check(rid, request.form.get("base", request.args.get("base")))
+                files = {} if visibility is not None else manifest(latest(rid)["id"])
                 files.update(changes)
                 number = save_version(rid, files, msg)
+                if visibility is not None:
+                    db().execute(
+                        "UPDATE repos SET visibility=? WHERE id=?", (visibility, rid)
+                    )
+                    if visibility == "public" and r["visibility"] != "public":
+                        event(
+                            r["owner"],
+                            "published",
+                            r["name"],
+                            "Published from Pocket",
+                            rid,
+                        )
                 promote(staged)
                 db().execute("UPDATE repos SET starter=0 WHERE id=?", (rid,))
                 event(
@@ -466,7 +502,9 @@ def create_app(config=None):
                     f"{len(changes)} file(s) uploaded · v{number}",
                     rid,
                 )
-        return jsonify(number=number, files=len(changes)), 201
+        return jsonify(
+            number=number, files=len(changes), snapshot=visibility is not None
+        ), 201
 
     @app.post("/api/repos/<rid>/files")
     def manage_file(rid):

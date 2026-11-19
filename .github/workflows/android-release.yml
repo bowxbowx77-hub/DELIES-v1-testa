@@ -1,0 +1,95 @@
+name: Publish signed Android release
+on:
+  push:
+    paths: ['mobile/releases/*.json']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      source: ${{ steps.meta.outputs.source }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(cat mobile/VERSION); [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          file="mobile/releases/$version.json"; jq -e --arg v "$version" --arg b "$GITHUB_REF_NAME" '.version==$v and .branch==$b' "$file" >/dev/null
+          source=$(jq -r .source_commit "$file"); [[ "$source" =~ ^[a-f0-9]{40}$ ]]; git merge-base --is-ancestor "$source" "$GITHUB_SHA"
+          run=$(jq -r .build_run "$file"); [[ "$run" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" | jq -e --arg s "$source" --arg r "$GITHUB_REPOSITORY" '.head_sha==$s and .head_repository.full_name==$r and .name=="Android APK" and .conclusion=="success"' >/dev/null
+          printf 'version=%s\nsource=%s\nrun=%s\n' "$version" "$source" "$run" >> "$GITHUB_OUTPUT"
+          echo "artifact=apk-$(jq -r .unsigned_sha256 "$file")-$(jq -r .content_digest "$file")" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact }}
+          run-id: ${{ steps.meta.outputs.run }}
+          github-token: ${{ github.token }}
+          path: unsigned
+      - name: Seal APK, verify with official SDK tools, prepare public deliverables
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          SOURCE: ${{ steps.meta.outputs.source }}
+        run: |
+          set -euo pipefail
+          mkdir delivery
+          apk="delivery/DEVVAULT-Pocket-$VERSION.apk"
+          ruby mobile/scripts/apk_v2.rb apply unsigned/*-unsigned.apk mobile/signing/release.pem "mobile/releases/$VERSION.json" "$apk"
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          "$tools/apksigner" verify --verbose --print-certs "$apk" | tee delivery/APK-VERIFICATION.txt
+          "$tools/zipalign" -c -P 16 4 "$apk"
+          "$tools/aapt" dump badging "$apk" > /tmp/badging
+          grep -F "package: name='org.devvault.pocket' versionCode='$(cat mobile/VERSION_CODE)' versionName='$VERSION'" /tmp/badging
+          grep -F "sdkVersion:'26'" /tmp/badging
+          git archive --format=tar.gz --prefix="DEVVAULT-$VERSION/" -o "delivery/DEVVAULT-$VERSION-source.tar.gz" "$SOURCE"
+          git diff --binary 547b973cb5c70419b6030761ec05e2c382d5468e "$SOURCE" > "delivery/devvault-pocket-$VERSION.patch"
+          cp mobile/signing/release.pem delivery/release-certificate.pem
+          cp "mobile/releases/$VERSION.json" delivery/signing-record.json
+          (cd delivery && sha256sum *.apk *.tar.gz *.patch *.pem *.json APK-VERIFICATION.txt > SHA256SUMS.txt)
+      - name: Allow emulator hardware acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install signed release and verify offline persistence on Android 15
+        uses: reactivecircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a # v2.37.0
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: ruby mobile/tests/device.rb delivery/*.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-release
+          path: delivery/
+          retention-days: 7
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-release
+          path: delivery
+      - name: Publish immutable, versioned release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.verify.outputs.version }}
+          SOURCE: ${{ needs.verify.outputs.source }}
+        run: |
+          set -euo pipefail
+          (cd delivery && sha256sum -c SHA256SUMS.txt)
+          gh release create "android-v$VERSION" --target "$SOURCE" --title "DEVVAULT Pocket $VERSION · Android" --notes-file "mobile/releases/$VERSION.md" delivery/*
