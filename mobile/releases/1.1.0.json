@@ -1,0 +1,10 @@
+{
+  "version": "1.1.0",
+  "build_run": 44482666584,
+  "source_commit": "fafab83ed815e1114ce542a8b6e10fac337b928b",
+  "branch": "arena/e35c5c39-delies-v1-testa",
+  "unsigned_sha256": "0a32bb1836cf27b0340f7a0854beac528028ffe934ed68186129973ae066bdb1",
+  "content_digest": "cb63e15326715cc59c9ec8f955f542688c9580c510c10c16cdc72583ea0eebde",
+  "certificate_sha256": "1fd9acf5d9a447692ef7ffc1da6c920c7823fa39da1e79a519350e1234ca130b",
+  "signature": "GA7OE8Kgwb6hRWwsM1RuYli9P8/0P1QHdhz/SuZHQbfmRsahCKksVGq6McFPD/Wo33CKkaCrIGQnUZ5wsK+0A6+56A6YESDZeKyFHumoyCqgfUh0XS870QDiP+Isrd9ZHKqa0rOxvl/wofbdszYaKU5XA/VO6y7Meg7XoEi3mKr3oavk3O/fOn61EZnDjLNDhBFePeSXDCwebJXYknDYkqsixVJ/MsMFPOk6s15lGjbpi86GH1KmPpgDAVKAVSLw1KH9S393FYkBw3geN9Xs2ZeOM+hzdcFreVmmjVYC7cURvQSe5LjOymO8MUqjcmybYMbUsXcJ/tB+RH4MSAeohAz+FfB13QqJCViQxz7ivfJfZSvYdEpa+0cYtpgmJ8NfdGTUI9i5mqR0UdbagAJo+zDw+XkmCDw/LF0iJS7Bv2yypjUs69EgMRSNWZsv3wDbitMqio5TTpugu+u98noU6j3ErU3VjObkkg4iu1F4WWeJZqbOe1l1wtsH2lWkLxEi"
+}
