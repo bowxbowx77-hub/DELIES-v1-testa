@@ -23,4 +23,5 @@ for(const f of fs.readdirSync('src').filter(f=>f.endsWith('.rb')).sort()) {
 }
 fs.writeFileSync('build/pocket.mjs',compiled);
 JS
+./node_modules/.bin/eslint build/pocket.mjs
 ./node_modules/.bin/esbuild build/pocket.mjs --bundle --minify --platform=browser --target=chrome110 --outfile=build/www/pocket.js --legal-comments=eof

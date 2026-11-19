@@ -324,12 +324,12 @@ class LocalVault
     end
     if @native
       ['stage','objects'].each do |folder|
-        listing=await Filesystem.readdir({directory:Directory.Data,path:folder}).catch(->(e){nil})
-        unless listing
+        directory_info=await Filesystem.readdir({directory:Directory.Data,path:folder}).catch(->(e){nil})
+        unless directory_info
           await Filesystem.mkdir({directory:Directory.Data,path:folder,recursive:true})
           next
         end
-        listing.files.each do |file|
+        directory_info.files.each do |file|
           if folder=='stage' || !live.has(file.name)
             await Filesystem.deleteFile({directory:Directory.Data,path:"#{folder}/#{file.name}"})
           end

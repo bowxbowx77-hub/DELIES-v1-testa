@@ -5,7 +5,6 @@
 require 'openssl'
 require 'digest'
 require 'json'
-require 'base64'
 module ApkV2
   extend self
   ALGO=0x0103
@@ -41,7 +40,7 @@ module ApkV2
     parts=sections(apk);digest=content_digest(parts)
     raise 'Mismatched content digest' unless digest.unpack1('H*')==doc.fetch('content_digest')
     raise 'Certificate mismatch' unless Digest::SHA256.hexdigest(cert.to_der)==doc.fetch('certificate_sha256')
-    data=signed_data(digest,cert);sig=Base64.strict_decode64(doc.fetch('signature'))
+    data=signed_data(digest,cert);sig=doc.fetch('signature').unpack1('m0')
     raise 'Invalid offline signature' unless cert.public_key.verify('SHA256',sig,data)
     signer=lp(data)+lp(lp(u32(ALGO)+lp(sig)))+lp(cert.public_key.public_to_der)
     value=lp(lp(signer));pair=u64(value.bytesize+4)+u32(ID)+value

@@ -35,7 +35,11 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           python3 scripts/setup_backend.py
-          npx playwright install --with-deps chromium
+          if command -v google-chrome >/dev/null; then
+            export CHROMIUM_EXECUTABLE="$(command -v google-chrome)"
+          else
+            npx playwright install --with-deps chromium
+          fi
           npx playwright test -c mobile/tests/playwright.config.cjs
       - name: Record unsigned APK and Android v2 digests
         id: request
