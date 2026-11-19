@@ -24,9 +24,12 @@ jobs:
           version=$(cat mobile/VERSION); [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
           file="mobile/releases/$version.json"; jq -e --arg v "$version" --arg b "$GITHUB_REF_NAME" '.version==$v and .branch==$b' "$file" >/dev/null
           source=$(jq -r .source_commit "$file"); [[ "$source" =~ ^[a-f0-9]{40}$ ]]; git merge-base --is-ancestor "$source" "$GITHUB_SHA"
+          # Tag the handoff (including its working smoke test and public approval).
+          # Never relabel an APK built from different app/backend/build sources.
+          git diff --quiet "$source" "$GITHUB_SHA" -- . ':(exclude)mobile/releases/**' ':(exclude)mobile/tests/device.rb' ':(exclude)docs/ANDROID.md' ':(exclude).github/workflows/android-release.yml'
           run=$(jq -r .build_run "$file"); [[ "$run" =~ ^[0-9]+$ ]]
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run" | jq -e --arg s "$source" --arg r "$GITHUB_REPOSITORY" '.head_sha==$s and .head_repository.full_name==$r and .name=="Android APK" and .conclusion=="success"' >/dev/null
-          printf 'version=%s\nsource=%s\nrun=%s\n' "$version" "$source" "$run" >> "$GITHUB_OUTPUT"
+          printf 'version=%s\nsource=%s\nrun=%s\n' "$version" "$GITHUB_SHA" "$run" >> "$GITHUB_OUTPUT"
           echo "artifact=apk-$(jq -r .unsigned_sha256 "$file")-$(jq -r .content_digest "$file")" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v4
         with:
